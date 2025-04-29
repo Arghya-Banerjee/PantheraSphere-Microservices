@@ -1,91 +1,156 @@
+# 🐲 PantheraSphere Backend
 
-# PantheraSphere - Forest Service & Tiger Service
-
-This repository contains the `forest-service` and `tiger-service` microservices for the PantheraSphere project, a scalable platform for tracking and conserving tiger sightings and forest data.
+A scalable microservices-based backend for **Tiger Sighting, Conservation, and Safari Management**.
+Built with **Java Spring Boot** and **Microsoft SQL Server**.
 
 ---
 
-## 🌲 Forest Service
+# 📂 Microservices Developed So Far
 
-Handles forests and forest types.
+| Service | Description |
+|:--------|:------------|
+| **User Service** | Handles user registration, authentication (Login/Signup), and role management (Admin/User). |
+| **Forest Service** | Manages forests where tigers are found. |
+| **Tiger Service** | Handles tiger records, their resident forests, and last sighting details. |
+| **Safari Service** | Manages safaris and observation checklists during tiger sighting trips. |
 
-### Base URL:
+---
+
+# 🔗 API Endpoints
+
+## 1. User Service
+
+| Method | Endpoint | Description |
+|:-------|:---------|:------------|
+| `POST` | `/api/users/register` | Register a new user |
+| `POST` | `/api/users/login` | Login with email & password |
+| `GET` | `/api/users/{id}` | Get user details by ID |
+
+---
+
+## 2. Forest Service
+
+| Method | Endpoint | Description |
+|:-------|:---------|:------------|
+| `POST` | `/api/forest` | Create a forest |
+| `GET` | `/api/forest/{id}` | Get forest by ID |
+| `GET` | `/api/forest` | Get all forests |
+| `DELETE` | `/api/forest/{id}` | Delete a forest |
+| `POST` | `/api/forest-type` | Create forest type (eg. Tropical, Grassland) |
+| `GET` | `/api/forest-type` | Get all forest types |
+
+---
+
+## 3. Tiger Service
+
+| Method | Endpoint | Description |
+|:-------|:---------|:------------|
+| `POST` | `/api/tiger` | Add a tiger record |
+| `GET` | `/api/tiger/{id}` | Get tiger by ID |
+| `GET` | `/api/tiger` | Get all tigers |
+| `DELETE` | `/api/tiger/{id}` | Delete a tiger record |
+
+---
+
+## 4. Safari Service (ChecklistHeader)
+
+| Method | Endpoint | Description |
+|:-------|:---------|:------------|
+| `POST` | `/api/checklist-header` | Create a safari trip (ChecklistHeader) |
+| `GET` | `/api/checklist-header/{id}` | Get safari trip by ID |
+| `GET` | `/api/checklist-header` | Get all safari trips |
+| `DELETE` | `/api/checklist-header/{id}` | Delete a safari trip |
+
+---
+
+## 5. Safari Service (ChecklistItem - Observations)
+
+| Method | Endpoint | Description |
+|:-------|:---------|:------------|
+| `POST` | `/api/checklist-item` | Create a tiger observation during safari |
+| `GET` | `/api/checklist-item/{id}` | Get observation by ID |
+| `GET` | `/api/checklist-item` | Get all observations |
+| `DELETE` | `/api/checklist-item/{id}` | Delete an observation |
+
+---
+
+# 📁 Folder Structure (Per Service)
+
 ```
-/api/v1/forest
+service-name/
+|-- controller/
+|-- entity/
+|-- dto/
+|-- repository/
+|-- service/
+|   |-- impl/
+|-- application.properties
+|-- ServiceApplication.java
 ```
 
-### Endpoints:
-
-| Method | Endpoint                  | Description                        |
-|--------|----------------------------|------------------------------------|
-| GET    | `/`                        | Get all forests                    |
-| GET    | `/{forestId}`              | Get a forest by ID                 |
-| GET    | `/by-type/{typeId}`        | Get forests by forest type         |
-| GET    | `/by-state?state=XYZ`      | Get forests by state               |
-| GET    | `/search?name=XYZ`         | Search forests by partial name     |
-| GET    | `/sorted?by=field&order=asc/desc` | Get sorted forests           |
-| GET    | `/paginated?page=0&size=10` | Get paginated forests             |
-| POST   | `/`                        | Create a new forest                |
-| PUT    | `/{forestId}`              | Update a forest                    |
-| DELETE | `/{forestId}`              | Delete a forest                    |
+- Clean separation between Controller, Service, Repository layers.
+- DTOs used for clean API request/response.
+- UUID (uniqueidentifier) primary keys everywhere.
 
 ---
 
-## 🐅 Tiger Service
+# 📈 Database Design
 
-Handles tiger records, sightings, and associated forest links.
-
-### Base URL:
-```
-/api/v1/tigers
-```
-
-### Endpoints:
-
-| Method | Endpoint                          | Description                        |
-|--------|------------------------------------|------------------------------------|
-| GET    | `/`                                | Get all tigers                     |
-| GET    | `/{tigerId}`                       | Get tiger by ID                    |
-| GET    | `/by-forest/{forestId}`            | Get tigers in a forest             |
-| GET    | `/by-gender?gender=M/F`            | Get tigers by gender               |
-| GET    | `/search?name=XYZ`                 | Search tigers by partial name      |
-| GET    | `/age-range?min=2&max=6`           | Get tigers by age range            |
-| GET    | `/last-sighted/recent`             | Get recently sighted tigers        |
-| POST   | `/`                                | Create a new tiger                 |
-| PUT    | `/{tigerId}`                       | Update a tiger                     |
-| PATCH  | `/{tigerId}/last-sighted`           | Update last sighted timestamp only |
-| DELETE | `/{tigerId}`                       | Delete a tiger                     |
+- Microsoft SQL Server used.
+- Separate databases per service (no cross-database joins).
+- UUIDs for Primary Keys.
+- Proper foreign key relationships inside each service database.
+- Dropped and recreated tables cleanly to match Hibernate schema validation.
 
 ---
 
-## 🛠️ Current Standards Followed
+# 🌟 Future Work
 
-- **Primary Key**: UUID (uniqueidentifier in SQL Server)
-- **Architecture**: Microservices (No cross-entity JPA relations)
-- **Tech Stack**: Spring Boot, JPA, Hibernate 6+, MS SQL Server
-- **DTO usage** for Create/Update clean request handling
-- **Microservice-safe** foreign key handling (UUID IDs only)
+- **User Service**
+  - JWT Authentication (token based login)
+  - Password hashing (BCrypt)
+  - Role-based access control (Admin/User)
 
----
+- **Safari Service**
+  - Validation (add @Valid for DTOs)
+  - Exception Handling (Custom Error responses)
+  - Pagination for large safari and observation lists
 
-## 🚀 Future Work
+- **Tiger Service**
+  - Upload tiger images
+  - Track tiger movements between forests
 
-### Forest Service
-- Add forest analytics APIs (area-based stats, state-wise distribution)
-- Audit forest modifications (createdAt, modifiedAt fields)
-
-### Tiger Service
-- Add image uploads for each tiger
-- Implement soft delete (add `isDeleted` flag)
-- Integrate with Observation service (future)
-- Add tiger movement tracking (sightings history)
-
-### Other Services To Build
-- `user-service` (for authentication, role management)
-- `safari-service` (to log safari trips)
-- `observation-service` (to record tiger sightings)
-- `report-service` (for analytics and conservation reports)
+- **Overall**
+  - Swagger/OpenAPI documentation
+  - Dockerize each service
+  - Setup centralized config server
+  - API Gateway + Service Discovery (Eureka)
 
 ---
 
-## 🐯 PantheraSphere — Tracking Tomorrow's Tigers, Today.
+# 🚀 Tech Stack
+
+- **Backend**: Java 17, Spring Boot 3.x
+- **Database**: Microsoft SQL Server
+- **Build Tool**: Maven
+- **Testing Tool**: Postman
+- **Authentication**: (Planned) JWT
+- **Architecture**: Microservices
+
+---
+
+# 📅 Current Status: 
+
+> **Initial backend development complete. Moving into testing and enhancements phase.**
+
+---
+
+# 🔍 Credits
+
+Developed by: [Arghya Banerjee]
+
+---
+
+# 📚 License
+
+> PantheraSphere is developed as a non-commercial wildlife conservation tracking platform.
