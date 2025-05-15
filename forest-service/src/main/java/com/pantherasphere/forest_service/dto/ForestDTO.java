@@ -1,14 +1,18 @@
 package com.pantherasphere.forest_service.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Data
-public class ForestDto {
+import java.util.UUID;
 
-    private Long forestID;
+@Data
+@AllArgsConstructor
+public class ForestDTO {
+
+    private UUID forestID;
     private String forestName;
     private Double forestArea;
     private String state;
-    private String forestTypeName;
+    private UUID forestTypeName;
 
 }

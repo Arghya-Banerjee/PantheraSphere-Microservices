@@ -1,8 +1,10 @@
 package com.pantherasphere.forest_service.controller;
 
-import com.pantherasphere.forest_service.entity.ForestMaster;
+import com.pantherasphere.forest_service.dto.ForestDTO;
+import com.pantherasphere.forest_service.dto.ForestRequest;
 import com.pantherasphere.forest_service.service.ForestService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,75 +13,64 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/forest")
+@RequiredArgsConstructor
 public class ForestController {
 
-    @Autowired
-    private ForestService forestService;
+    private final ForestService forestService;
 
-    // GET all forests
     @GetMapping
-    public ResponseEntity<List<ForestMaster>> getAllForests() {
+    public ResponseEntity<List<ForestDTO>> getAllForests() {
         return ResponseEntity.ok(forestService.getAllForests());
     }
 
-    // GET forest by ID
     @GetMapping("/{forestId}")
-    public ResponseEntity<ForestMaster> getForestById(@PathVariable UUID forestId) {
+    public ResponseEntity<ForestDTO> getForestById(@PathVariable UUID forestId) {
         return ResponseEntity.ok(forestService.getForestById(forestId));
     }
 
-    // GET forests by forestTypeId
     @GetMapping("/by-type/{typeId}")
-    public ResponseEntity<List<ForestMaster>> getForestsByType(@PathVariable UUID typeId) {
+    public ResponseEntity<List<ForestDTO>> getForestsByType(@PathVariable UUID typeId) {
         return ResponseEntity.ok(forestService.getForestsByTypeId(typeId));
     }
 
-    // GET forests by state
     @GetMapping("/by-state")
-    public ResponseEntity<List<ForestMaster>> getForestsByState(@RequestParam String state) {
+    public ResponseEntity<List<ForestDTO>> getForestsByState(@RequestParam String state) {
         return ResponseEntity.ok(forestService.getForestsByState(state));
     }
 
-    // GET forests by name search
     @GetMapping("/search")
-    public ResponseEntity<List<ForestMaster>> searchForestsByName(@RequestParam String name) {
+    public ResponseEntity<List<ForestDTO>> searchForestsByName(@RequestParam String name) {
         return ResponseEntity.ok(forestService.searchForestsByName(name));
     }
 
-    // GET sorted forests
     @GetMapping("/sorted")
-    public ResponseEntity<List<ForestMaster>> getSortedForests(
+    public ResponseEntity<List<ForestDTO>> getSortedForests(
             @RequestParam(defaultValue = "forestName") String by,
             @RequestParam(defaultValue = "asc") String order) {
         return ResponseEntity.ok(forestService.getSortedForests(by, order));
     }
 
-    // GET paginated forests
     @GetMapping("/paginated")
-    public ResponseEntity<List<ForestMaster>> getPaginatedForests(
+    public ResponseEntity<List<ForestDTO>> getPaginatedForests(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(forestService.getPaginatedForests(page, size));
     }
 
-    // POST create forest
     @PostMapping
-    public ResponseEntity<ForestMaster> createForest(@RequestBody ForestMaster forest) {
-        return ResponseEntity.ok(forestService.createForest(forest));
+    public ResponseEntity<ForestDTO> createForest(@Valid @RequestBody ForestRequest request) {
+        return ResponseEntity.ok(forestService.createForest(request));
     }
 
-    // PUT update forest
     @PutMapping("/{forestId}")
-    public ResponseEntity<ForestMaster> updateForest(@PathVariable UUID forestId,
-                                                     @RequestBody ForestMaster updatedForest) {
-        return ResponseEntity.ok(forestService.updateForest(forestId, updatedForest));
+    public ResponseEntity<ForestDTO> updateForest(@PathVariable UUID forestId,
+                                                  @Valid @RequestBody ForestRequest request) {
+        return ResponseEntity.ok(forestService.updateForest(forestId, request));
     }
 
-    // DELETE forest
     @DeleteMapping("/{forestId}")
     public ResponseEntity<Void> deleteForest(@PathVariable UUID forestId) {
         forestService.deleteForest(forestId);
         return ResponseEntity.noContent().build();
     }
-
 }

@@ -10,7 +10,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "ForestMaster")
 @Data
-public class ForestMaster {
+public class Forest {
 
     @Id
     @GeneratedValue
@@ -29,6 +29,6 @@ public class ForestMaster {
 
     @ManyToOne
     @JoinColumn(name = "forestTypeId", nullable = false)
-    private ForestTypeMaster forestType;
+    private ForestType forestType;
 }
 

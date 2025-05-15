@@ -10,7 +10,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "ForestTypeMaster")
 @Data
-public class ForestTypeMaster {
+public class ForestType {
 
     @Id
     @GeneratedValue
@@ -24,4 +24,3 @@ public class ForestTypeMaster {
     @Column(name = "description")
     private String description;
 }
-

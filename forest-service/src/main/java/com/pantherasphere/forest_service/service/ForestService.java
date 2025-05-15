@@ -1,22 +1,22 @@
 package com.pantherasphere.forest_service.service;
 
-import com.pantherasphere.forest_service.entity.ForestMaster;
+import com.pantherasphere.forest_service.dto.ForestDTO;
+import com.pantherasphere.forest_service.dto.ForestRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ForestService {
 
-    List<ForestMaster> getAllForests();
-    ForestMaster getForestById(UUID id);
-    List<ForestMaster> getForestsByTypeId(UUID typeId);
-    List<ForestMaster> getForestsByState(String state);
-    List<ForestMaster> searchForestsByName(String name);
-    List<ForestMaster> getSortedForests(String by, String order);
-    List<ForestMaster> getPaginatedForests(int page, int size);
+    List<ForestDTO> getAllForests();
+    ForestDTO getForestById(UUID id);
+    List<ForestDTO> getForestsByTypeId(UUID typeId);
+    List<ForestDTO> getForestsByState(String state);
+    List<ForestDTO> searchForestsByName(String name);
+    List<ForestDTO> getSortedForests(String by, String order);
+    List<ForestDTO> getPaginatedForests(int page, int size);
 
-    ForestMaster createForest(ForestMaster forest);
-    ForestMaster updateForest(UUID id, ForestMaster updatedForest);
+    ForestDTO createForest(ForestRequest forestRequest);
+    ForestDTO updateForest(UUID id, ForestRequest forestRequest);
     void deleteForest(UUID id);
-
 }

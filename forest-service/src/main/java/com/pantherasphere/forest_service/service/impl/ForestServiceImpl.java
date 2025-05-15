@@ -1,9 +1,11 @@
 package com.pantherasphere.forest_service.service.impl;
 
-import com.pantherasphere.forest_service.entity.ForestMaster;
-import com.pantherasphere.forest_service.entity.ForestTypeMaster;
-import com.pantherasphere.forest_service.repository.ForestMasterRepository;
-import com.pantherasphere.forest_service.repository.ForestTypeMasterRepository;
+import com.pantherasphere.forest_service.dto.ForestDTO;
+import com.pantherasphere.forest_service.dto.ForestRequest;
+import com.pantherasphere.forest_service.entity.Forest;
+import com.pantherasphere.forest_service.entity.ForestType;
+import com.pantherasphere.forest_service.repository.ForestRepository;
+import com.pantherasphere.forest_service.repository.ForestTypeRepository;
 import com.pantherasphere.forest_service.service.ForestService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,80 +20,101 @@ import java.util.UUID;
 public class ForestServiceImpl implements ForestService {
 
     @Autowired
-    private ForestMasterRepository forestMasterRepository;
+    private ForestRepository forestMasterRepository;
+
     @Autowired
-    private ForestTypeMasterRepository forestTypeMasterRepository;
+    private ForestTypeRepository forestTypeMasterRepository;
 
-    @Override
-    public List<ForestMaster> getAllForests() {
-        return forestMasterRepository.findAll();
+    // ---- Helper: Entity → DTO ----
+    private ForestDTO toDTO(Forest forest) {
+        return new ForestDTO(
+                forest.getForestId(),
+                forest.getForestName(),
+                forest.getForestArea(),
+                forest.getState(),
+                forest.getForestType().getForestTypeId()
+        );
     }
 
     @Override
-    public ForestMaster getForestById(UUID id) {
-        return forestMasterRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Forest not found with Id: " + id));
+    public List<ForestDTO> getAllForests() {
+        return forestMasterRepository.findAll()
+                .stream().map(this::toDTO).toList();
     }
 
     @Override
-    public List<ForestMaster> getForestsByTypeId(UUID typeId) {
-        return forestMasterRepository.findByForestType_ForestTypeId(typeId);
+    public ForestDTO getForestById(UUID id) {
+        return toDTO(forestMasterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Forest not found with ID: " + id)));
     }
 
     @Override
-    public List<ForestMaster> getForestsByState(String state) {
-        return forestMasterRepository.findByStateIgnoreCase(state);
+    public List<ForestDTO> getForestsByTypeId(UUID typeId) {
+        return forestMasterRepository.findByForestType_ForestTypeId(typeId)
+                .stream().map(this::toDTO).toList();
     }
 
     @Override
-    public List<ForestMaster> searchForestsByName(String name) {
-        return forestMasterRepository.findByForestNameContainingIgnoreCase(name);
+    public List<ForestDTO> getForestsByState(String state) {
+        return forestMasterRepository.findByStateIgnoreCase(state)
+                .stream().map(this::toDTO).toList();
     }
 
     @Override
-    public List<ForestMaster> getSortedForests(String by, String order) {
+    public List<ForestDTO> searchForestsByName(String name) {
+        return forestMasterRepository.findByForestNameContainingIgnoreCase(name)
+                .stream().map(this::toDTO).toList();
+    }
+
+    @Override
+    public List<ForestDTO> getSortedForests(String by, String order) {
         Sort.Direction sortOrder = order.equalsIgnoreCase("desc") ?
                 Sort.Direction.DESC : Sort.Direction.ASC;
-        return forestMasterRepository.findAll(Sort.by(sortOrder, by));
+
+        return forestMasterRepository.findAll(Sort.by(sortOrder, by))
+                .stream().map(this::toDTO).toList();
     }
 
     @Override
-    public List<ForestMaster> getPaginatedForests(int page, int size) {
-        return forestMasterRepository.findAll(PageRequest.of(page, size)).getContent();
+    public List<ForestDTO> getPaginatedForests(int page, int size) {
+        return forestMasterRepository.findAll(PageRequest.of(page, size))
+                .stream().map(this::toDTO).toList();
     }
 
     @Override
-    public ForestMaster createForest(ForestMaster forest) {
-        if (forest.getForestType() == null || forest.getForestType().getForestTypeId() == null) {
-            throw new IllegalArgumentException("ForestTypeID must not be null when creating a Forest");
-        }
+    public ForestDTO createForest(ForestRequest request) {
 
-        UUID typeId = forest.getForestType().getForestTypeId();
-        ForestTypeMaster type = forestTypeMasterRepository.findById(typeId)
-                .orElseThrow(() -> new EntityNotFoundException("ForestType not found with ID: " + typeId));
+        ForestType type = forestTypeMasterRepository.findById(request.getForestTypeId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "ForestType not found with ID: " + request.getForestTypeId()));
 
+        Forest forest = new Forest();
+        forest.setForestName(request.getForestName());
+        forest.setForestArea(request.getForestArea());
+        forest.setState(request.getState());
         forest.setForestType(type);
-        return forestMasterRepository.save(forest);
+
+        Forest saved = forestMasterRepository.save(forest);
+        return toDTO(saved);
     }
 
     @Override
-    public ForestMaster updateForest(UUID id, ForestMaster updatedForest) {
-        ForestMaster existing = getForestById(id);
+    public ForestDTO updateForest(UUID id, ForestRequest request) {
 
-        existing.setForestName(updatedForest.getForestName());
-        existing.setForestArea(updatedForest.getForestArea());
-        existing.setState(updatedForest.getState());
+        Forest existing = forestMasterRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Forest not found with ID: " + id));
 
-        if (updatedForest.getForestType() == null || updatedForest.getForestType().getForestTypeId() == null) {
-            throw new IllegalArgumentException("ForestTypeID must not be null when updating a Forest");
-        }
+        ForestType type = forestTypeMasterRepository.findById(request.getForestTypeId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "ForestType not found with ID: " + request.getForestTypeId()));
 
-        UUID typeId = updatedForest.getForestType().getForestTypeId();
-        ForestTypeMaster type = forestTypeMasterRepository.findById(typeId)
-                .orElseThrow(() -> new EntityNotFoundException("ForestType not found with ID: " + typeId));
+        existing.setForestName(request.getForestName());
+        existing.setForestArea(request.getForestArea());
+        existing.setState(request.getState());
         existing.setForestType(type);
 
-        return forestMasterRepository.save(existing);
+        Forest updated = forestMasterRepository.save(existing);
+        return toDTO(updated);
     }
 
     @Override
